@@ -2,7 +2,7 @@ import pandas as pd
 import panel as pn
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
-
+''' 
 # Load the dataset
 df = pd.read_csv('StudentsPerformance.csv')
 
@@ -44,3 +44,44 @@ def update_dashboard(math_score, reading_score, writing_score):
 
 # Run the app
 dashboard.servable()
+
+'''
+import pandas as pd
+import panel as pn
+
+# Load the dataset
+df = pd.read_csv('StudentsPerformance.csv')
+
+# Define the sidebar widgets
+num_rows = 15
+num_rows_input = pn.widgets.IntSlider(name='Number of rows', start=1, end=len(df), value=num_rows)
+gender_filter = pn.widgets.Select(name='Gender', options=['All'] + df['gender'].unique().tolist(), value='All')
+ethnicity_filter = pn.widgets.Select(name='Ethnicity', options=['All'] + df['race/ethnicity'].unique().tolist(), value='All')
+parent_ed_filter = pn.widgets.Select(name='Parental education', options=['All'] + df['parental level of education'].unique().tolist(), value='All')
+
+# Define the function for updating the table
+def update_table(num_rows, gender, ethnicity, parent_ed):
+    filtered_df = df
+    if gender != 'All':
+        filtered_df = filtered_df[filtered_df['gender'] == gender]
+    if ethnicity != 'All':
+        filtered_df = filtered_df[filtered_df['race/ethnicity'] == ethnicity]
+    if parent_ed != 'All':
+        filtered_df = filtered_df[filtered_df['parental level of education'] == parent_ed]
+    filtered_df = filtered_df.head(num_rows)
+    return filtered_df
+
+# Define the main panel
+table = pn.widgets.DataFrame(update_table(num_rows, gender_filter.value, ethnicity_filter.value, parent_ed_filter.value), width=800)
+
+sidebar = pn.Column(num_rows_input, gender_filter, ethnicity_filter, parent_ed_filter, pn.layout.HSpacer(), pn.widgets.Button(name='Refresh', button_type='primary'))
+
+dashboard = pn.Row(sidebar, table)
+
+# Update the table when the filters are changed
+@pn.depends(num_rows_input.param.value, gender_filter.param.value, ethnicity_filter.param.value, parent_ed_filter.param.value)
+def update_dashboard(num_rows, gender, ethnicity, parent_ed):
+    table.value = update_table(num_rows, gender, ethnicity, parent_ed)
+
+# Run the app
+dashboard.servable() 
