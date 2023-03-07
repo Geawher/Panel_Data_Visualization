@@ -58,6 +58,7 @@ num_rows_input = pn.widgets.IntSlider(name='Number of rows', start=1, end=len(df
 gender_filter = pn.widgets.Select(name='Gender', options=['All'] + df['gender'].unique().tolist(), value='All')
 ethnicity_filter = pn.widgets.Select(name='Ethnicity', options=['All'] + df['race/ethnicity'].unique().tolist(), value='All')
 parent_ed_filter = pn.widgets.Select(name='Parental education', options=['All'] + df['parental level of education'].unique().tolist(), value='All')
+refresh_button = pn.widgets.Button(name='Refresh', button_type='primary')
 
 # Define the function for updating the table
 def update_table(num_rows, gender, ethnicity, parent_ed):
@@ -74,14 +75,20 @@ def update_table(num_rows, gender, ethnicity, parent_ed):
 # Define the main panel
 table = pn.widgets.DataFrame(update_table(num_rows, gender_filter.value, ethnicity_filter.value, parent_ed_filter.value), width=800)
 
-sidebar = pn.Column(num_rows_input, gender_filter, ethnicity_filter, parent_ed_filter, pn.layout.HSpacer(), pn.widgets.Button(name='Refresh', button_type='primary'))
+sidebar = pn.Column(num_rows_input, gender_filter, ethnicity_filter, parent_ed_filter, pn.layout.HSpacer(), refresh_button)
 
 dashboard = pn.Row(sidebar, table)
 
-# Update the table when the filters are changed
+# Define the callbacks
 @pn.depends(num_rows_input.param.value, gender_filter.param.value, ethnicity_filter.param.value, parent_ed_filter.param.value)
 def update_dashboard(num_rows, gender, ethnicity, parent_ed):
     table.value = update_table(num_rows, gender, ethnicity, parent_ed)
 
+def update_dataframe(*_):
+    data = update_table(num_rows_input.value, gender_filter.value, ethnicity_filter.value, parent_ed_filter.value)
+    table.value = data
+
+refresh_button.on_click(update_dataframe)
+
 # Run the app
-dashboard.servable() 
+dashboard.servable()
