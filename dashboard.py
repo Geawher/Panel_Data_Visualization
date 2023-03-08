@@ -69,13 +69,16 @@ filters = {
 }
 filter_table = pn.widgets.Tabulator(df, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width', header_filters=filters)
 
-# Define the sidebar with a text input widget
-sidebar = pn.Column(
-    pn.widgets.TextInput(value='Enter search term', placeholder='Search'),
-    width=200,
-    height=120,
-    sizing_mode='fixed'
-)
+gender = pn.widgets.Select(name="gender", options=(list)(df["gender"].unique()))
+race_ethnicity = pn.widgets.Select(name="race/ethnicity", options=(list)(df["race/ethnicity"].unique()))
+parental_level_of_education = pn.widgets.Select(name="parental level of education", options=(list)(df["parental level of education"].unique()))
+lunch = pn.widgets.Select(name="Lunch", options=(list)(df["lunch"].unique()))
+test_preparation_course = pn.widgets.Select(name="test preparation course", options=(list)(df["test preparation course"].unique()))
+math = pn.widgets.FloatSlider(name="Math score", start=0, end=100, value=50)
+reading = pn.widgets.FloatSlider(name="Reading score", start=0, end=100, value=50)
+writing = pn.widgets.FloatSlider(name="Writing score", start=0, end=100, value=50)
+
+
 
 # Define the scatter plot and histogram
 scatter_plot = df.hvplot.scatter(x='math score', y='reading score', c='writing score', cmap='viridis')
@@ -103,8 +106,7 @@ pie_chart_panel = pn.pane.Plotly(pie_chart, sizing_mode='stretch_both')
 
 # Combine the filter_table and sidebar into a grid layout
 grid = pn.Row(
-    sidebar,
-    pn.Spacer(width=20),  # Add some spacing between the sidebar and the filter_table
+    pn.Spacer(width=10),  # Add some spacing between the sidebar and the filter_table
     pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
     sizing_mode='stretch_both'
 )
@@ -127,7 +129,8 @@ grid2 = pn.Row(
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
     title='Filter Table Template',
-    main=[grid,grid1,grid2]
+    main=[grid,grid1,grid2],
+     sidebar=[pn.pane.Markdown("## Filters"),math,reading,writing,gender, race_ethnicity, parental_level_of_education, lunch, test_preparation_course]
 )
 
 # Show the template in a browser tab
