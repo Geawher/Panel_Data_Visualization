@@ -2,6 +2,8 @@ import pandas as pd
 import panel as pn
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
+
+
 ''' 
 # Load the dataset
 df = pd.read_csv('StudentsPerformance.csv')
@@ -48,47 +50,56 @@ dashboard.servable()
 '''
 import pandas as pd
 import panel as pn
+import hvplot.pandas
 
 # Load the dataset
 df = pd.read_csv('StudentsPerformance.csv')
 
-# Define the sidebar widgets
-num_rows = 15
-num_rows_input = pn.widgets.IntSlider(name='Number of rows', start=1, end=len(df), value=num_rows)
-gender_filter = pn.widgets.Select(name='Gender', options=['All'] + df['gender'].unique().tolist(), value='All')
-ethnicity_filter = pn.widgets.Select(name='Ethnicity', options=['All'] + df['race/ethnicity'].unique().tolist(), value='All')
-parent_ed_filter = pn.widgets.Select(name='Parental education', options=['All'] + df['parental level of education'].unique().tolist(), value='All')
-refresh_button = pn.widgets.Button(name='Refresh', button_type='primary')
+# Define the filters dictionary and filter_table widget
+filters = {
+    'gender': {'type': 'input', 'func': 'like', 'placeholder': 'Enter gender'},
+    'race/ethnicity': {'type': 'input','placeholder': 'Enter race'},
+    'parental level of education': {'type': 'input', 'func': 'like', 'placeholder': 'Enter parental level of education'},
+    'lunch': {'type': 'input', 'func': 'like', 'placeholder': 'Enter director'},
+    'test preparation course': {'type': 'input', 'func': 'like', 'placeholder': 'Enter writer'},
+    'reading score': {'type': 'number', 'func': '>=', 'placeholder': 'Enter minimum reading score'},
+    'math score': {'type': 'number', 'func': '>=', 'placeholder': 'Enter minimum math score'},
+    'writing score': {'type': 'number', 'func': '>=', 'placeholder': 'Enter minimum rating'}
+}
+filter_table = pn.widgets.Tabulator(df, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width', header_filters=filters)
 
-# Define the function for updating the table
-def update_table(num_rows, gender, ethnicity, parent_ed):
-    filtered_df = df
-    if gender != 'All':
-        filtered_df = filtered_df[filtered_df['gender'] == gender]
-    if ethnicity != 'All':
-        filtered_df = filtered_df[filtered_df['race/ethnicity'] == ethnicity]
-    if parent_ed != 'All':
-        filtered_df = filtered_df[filtered_df['parental level of education'] == parent_ed]
-    filtered_df = filtered_df.head(num_rows)
-    return filtered_df
+# Define the sidebar with a text input widget
+sidebar = pn.Column(
+    pn.widgets.TextInput(value='Enter search term', placeholder='Search'),
+    width=200,
+    height=120,
+    sizing_mode='fixed'
+)
 
-# Define the main panel
-table = pn.widgets.DataFrame(update_table(num_rows, gender_filter.value, ethnicity_filter.value, parent_ed_filter.value), width=800)
+# Define the scatter plot and histogram
+scatter_plot = df.hvplot.scatter(x='math score', y='reading score', c='writing score', cmap='viridis')
+histogram = df.hvplot.hist('writing score', bins=20, width=500)
 
-sidebar = pn.Column(num_rows_input, gender_filter, ethnicity_filter, parent_ed_filter, pn.layout.HSpacer(), refresh_button)
+# Combine the filter_table and sidebar into a grid layout
+grid = pn.Row(
+    sidebar,
+    pn.Spacer(width=20),  # Add some spacing between the sidebar and the filter_table
+    pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
+    sizing_mode='stretch_both'
+)
+# Combine the histogram and scatter_plot into a grid layout
+grid1 = pn.Row(
+    pn.Column(histogram, height=500, sizing_mode='stretch_both', width_policy='max'),
+    pn.Spacer(width=20),  # Add some spacing between the sidebar and the filter_table
+    pn.Column(scatter_plot, height=500, sizing_mode='stretch_both', width_policy='max'),
+    sizing_mode='stretch_both'
+)
 
-dashboard = pn.Row(sidebar, table)
+# Define a custom panel template with the grid layout
+template = pn.template.FastListTemplate(
+    title='Filter Table Template',
+    main=[grid,grid1]
+)
 
-# Define the callbacks
-@pn.depends(num_rows_input.param.value, gender_filter.param.value, ethnicity_filter.param.value, parent_ed_filter.param.value)
-def update_dashboard(num_rows, gender, ethnicity, parent_ed):
-    table.value = update_table(num_rows, gender, ethnicity, parent_ed)
-
-def update_dataframe(*_):
-    data = update_table(num_rows_input.value, gender_filter.value, ethnicity_filter.value, parent_ed_filter.value)
-    table.value = data
-
-refresh_button.on_click(update_dataframe)
-
-# Run the app
-dashboard.servable()
+# Show the template in a browser tab
+template.servable()
