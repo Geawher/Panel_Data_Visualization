@@ -105,7 +105,7 @@ class student_EDA (param.Parameterized):
             pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
         )  
-    @param.depends('math_widget',watch=True, on_init=False)
+    @param.depends('gender_widget',watch=True, on_init=False)
     def plots(self):
         
         if (self.gender_widget!='ALL'):
