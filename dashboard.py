@@ -164,7 +164,7 @@ class student_EDA (param.Parameterized):
         bar_chart_panel = pn.pane.Plotly(bar_chart, sizing_mode='stretch_both')
 
         # Pie chart
-        pie_chart_data = df['race/ethnicity'].value_counts()
+        pie_chart_data = df1['race/ethnicity'].value_counts()
         pie_chart = go.Figure(
             data=[go.Pie(labels=pie_chart_data.index, values=pie_chart_data.values)],
             layout=go.Layout(title='Distribution of Students by Race/Ethnicity')
@@ -186,14 +186,64 @@ class student_EDA (param.Parameterized):
             pn.Column(pie_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
         )
-        return grid1, grid2
+        return grid1
+    
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    def plots2(self):
+        df1=df
+        if (self.gender_widget!='ALL'):
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+            
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+        
+        # Bar chart
+        bar_chart_data = df1.groupby('gender').mean()[['math score', 'reading score', 'writing score']]
+        bar_chart = go.Figure(
+            data=[
+                go.Bar(name='Math score', x=bar_chart_data.index, y=bar_chart_data['math score']),
+                go.Bar(name='Reading score', x=bar_chart_data.index, y=bar_chart_data['reading score']),
+                go.Bar(name='Writing score', x=bar_chart_data.index, y=bar_chart_data['writing score']),
+            ],
+            layout=go.Layout(title='Average Scores by Gender')
+        )
+        bar_chart_panel = pn.pane.Plotly(bar_chart, sizing_mode='stretch_both')
+
+        # Pie chart
+        pie_chart_data = df1['race/ethnicity'].value_counts()
+        pie_chart = go.Figure(
+            data=[go.Pie(labels=pie_chart_data.index, values=pie_chart_data.values)],
+            layout=go.Layout(title='Distribution of Students by Race/Ethnicity')
+        )
+        pie_chart_panel = pn.pane.Plotly(pie_chart, sizing_mode='stretch_both')
+
+        # Combine the new plots into a grid layout with the existing ones
+        grid2 = pn.Row(
+            pn.Column(bar_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
+            pn.Spacer(width=20),
+            pn.Column(pie_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
+            sizing_mode='stretch_both'
+        )
+        return grid2
     
 dashboard = student_EDA()
-x,y = dashboard.plots()
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
     title='Filter Table Template',
-    main=[dashboard.table,x,y],
+    main=[dashboard.table,dashboard.plots,dashboard.plots2],
      sidebar=[pn.Param(dashboard.param,widgets={'math_widget':pn.widgets.FloatSlider,'reading_widget':pn.widgets.FloatSlider,'writing_widget':pn.widgets.FloatSlider, 'race_ethnicity_widget': pn.widgets.Select,'gender_widget': pn.widgets.Select, 'parental_level_of_education_widget': pn.widgets.Select, 'lunch_widget': pn.widgets.Select, 'test_preparation_course_widget': pn.widgets.Select})]
 )
 
