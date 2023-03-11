@@ -63,29 +63,31 @@ class student_EDA (param.Parameterized):
 
     gender_list= (list)(df["gender"].unique())
     gender_list.append('ALL')
-    gender_widget  =param.ObjectSelector(default='male',objects=gender_list)
+    gender_widget  =param.ObjectSelector(default='ALL',objects=gender_list,label="Gender")
 
     race_ethnicity_list= (list)(df["race/ethnicity"].unique())
     race_ethnicity_list.append('ALL')
-    race_ethnicity_widget  = param.ObjectSelector(default='ALL',objects=race_ethnicity_list)
+    race_ethnicity_widget  = param.ObjectSelector(default='ALL',objects=race_ethnicity_list,label="Race/Ethnicity")
 
     parental_level_of_education_list = (list)(df["parental level of education"].unique())
-    parental_level_of_education_list='ALL'
-    parental_level_of_education_widget  = param.ObjectSelector(default='ALL',objects=parental_level_of_education_list)
+    parental_level_of_education_list.append('ALL')
+    parental_level_of_education_widget  = param.ObjectSelector(default='ALL',objects=parental_level_of_education_list,label="Parental level of education")
     
     lunch_list= (list)(df["lunch"].unique())
     lunch_list.append('ALL')
-    lunch = param.ObjectSelector(default='ALL',objects=lunch_list)
+    lunch_widget = param.ObjectSelector(default='ALL',objects=lunch_list,label="Lunch")
 
     test_prep_list= (list)(df["test preparation course"].unique())
     test_prep_list.append('ALL')
-    test_preparation_course_widget  = param.ObjectSelector(default='ALL',objects=test_prep_list)
+    test_preparation_course_widget  = param.ObjectSelector(default='ALL',objects=test_prep_list,label="Test preparation course")
     
-    math_widget = param.Number(50, bounds=(0, 100))
-    reading_widget  = param.Number(50, bounds=(0, 100))
-    writing_widget  = param.Number(50, bounds=(0, 100))
+    math_widget = param.Number(0, bounds=(0, 100))
+    reading_widget  = param.Number(0, bounds=(0, 100))
+    writing_widget  = param.Number(0, bounds=(0, 100))
 
-    #@pn.depends('gender_widget')
+
+
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def table (self):
          # Define the filters dictionary and filter_table widget
         filters = {
@@ -98,18 +100,54 @@ class student_EDA (param.Parameterized):
         'math score': {'type': 'number', 'func': '>=', 'placeholder': 'Enter minimum math score'},
         'writing score': {'type': 'number', 'func': '>=', 'placeholder': 'Enter minimum rating'}
          }
-    
-        filter_table =pn.widgets.Tabulator(df, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width', header_filters=filters)
+        df1=df
+        if (self.gender_widget!='ALL'):
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+
+
+        filter_table =pn.widgets.Tabulator(df1, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width', header_filters=filters)
         return  pn.Row(
             pn.Spacer(width=10),  # Add some spacing between the sidebar and the filter_table
             pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
         )  
-    @param.depends('gender_widget',watch=True, on_init=False)
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots(self):
-        
+        df1=df
         if (self.gender_widget!='ALL'):
-            df1 = df[df['gender']==self.gender_widget]
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+            
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+        
         # Define the scatter plot and histogram
         scatter_plot = df1.hvplot.scatter(x='math score', y='reading score', c='writing score', cmap='viridis')
         histogram = df1.hvplot.hist('writing score', bins=20, width=500)
@@ -148,14 +186,14 @@ class student_EDA (param.Parameterized):
             pn.Column(pie_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
         )
-        return grid1 
+        return grid1, grid2
     
 dashboard = student_EDA()
-
+x,y = dashboard.plots()
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
     title='Filter Table Template',
-    main=[dashboard.table,dashboard.plots],
+    main=[dashboard.table,x,y],
      sidebar=[pn.Param(dashboard.param,widgets={'math_widget':pn.widgets.FloatSlider,'reading_widget':pn.widgets.FloatSlider,'writing_widget':pn.widgets.FloatSlider, 'race_ethnicity_widget': pn.widgets.Select,'gender_widget': pn.widgets.Select, 'parental_level_of_education_widget': pn.widgets.Select, 'lunch_widget': pn.widgets.Select, 'test_preparation_course_widget': pn.widgets.Select})]
 )
 
