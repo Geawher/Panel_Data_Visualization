@@ -90,7 +90,7 @@ class student_EDA (param.Parameterized):
 
 
 
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget','average_widget',watch=True, on_init=False)
+    @param.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget','average_widget',watch=True, on_init=False)
     def table (self):
          # Define the filters dictionary and filter_table widget
         filters = {
@@ -132,44 +132,9 @@ class student_EDA (param.Parameterized):
             pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
         )  
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
-    def plots(self):
-        df1=df
-        if (self.gender_widget!='ALL'):
-            df1 = df1[df1['gender']==self.gender_widget]
+   
 
-        if (self.race_ethnicity_widget!='ALL'):
-            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
-
-        if (self.parental_level_of_education_widget!='ALL'):
-            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
-
-        if (self.lunch_widget!='ALL'):
-            df1 = df1[df1['lunch']==self.lunch_widget]
-
-        if (self.test_preparation_course_widget!='ALL'):
-            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
-            
-        df1 = df1[df1['math score']>=self.math_widget]
-        df1 = df1[df1['reading score']>=self.reading_widget]
-        df1 = df1[df1['writing score']>=self.writing_widget]
-        df1 = df1[df1['average score']>=self.average_widget]
-
-        
-        # Define the scatter plot and histogram
-        scatter_plot = df1.hvplot.scatter(x='writing score', y='reading score', c='average score', cmap='viridis',width=900)
-
-        histogram = df1.hvplot.hist('writing score', bins=20)
-
-        # Combine the histogram and scatter_plot into a grid layout
-        grid1 = pn.Row(
-            scatter_plot, height=500, sizing_mode='stretch_both', width_policy='max'
-        )
-
-        return grid1
-    
-
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    @param.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots1(self):
         df1=df
         if (self.gender_widget!='ALL'):
@@ -206,7 +171,7 @@ class student_EDA (param.Parameterized):
 
         # fig1.show()
         return grid3
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    @param.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots2(self):
         df1=df
         if (self.gender_widget!='ALL'):
@@ -259,7 +224,7 @@ class student_EDA (param.Parameterized):
 
         # fig1.show()
         return grid3
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    @param.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots3(self):
         df1=df
         if (self.gender_widget!='ALL'):
@@ -286,7 +251,7 @@ class student_EDA (param.Parameterized):
         scatter_plot.update_layout(width=440, height=455, xaxis_title='Writing Score', yaxis_title='Reading Score', title='Scatter Plot of Writing Score vs Reading Score')
         scatter_plot1 = go.Figure()
 
-        scatter_plot1.add_trace(go.Scatter(x=df['math score'], y=df['average score'], 
+        scatter_plot1.add_trace(go.Scatter(x=df1['math score'], y=df1['average score'], 
                                 mode='markers', marker=dict(color='#C91B26')))
 
         scatter_plot1.update_layout(title='Scatter Plot of Math Score vs Average Score',
@@ -303,7 +268,7 @@ class student_EDA (param.Parameterized):
         # fig1.show()
         return grid
     
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    @param.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots4(self):
         df1=df
         if (self.gender_widget!='ALL'):
