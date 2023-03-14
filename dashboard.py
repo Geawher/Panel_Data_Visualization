@@ -123,11 +123,66 @@ class student_EDA (param.Parameterized):
         df1 = df1[df1['writing score']>=self.writing_widget]
         df1 = df1[df1['average score']>=self.average_widget]
         
-
-
+        total_student = len(df1)
+        success_df = df1[df1["average score"]>=60]
+        total_success = len(success_df)
         filter_table =pn.widgets.Tabulator(df1, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width')
+        
+        # Create a plotly figure object
+        fig = go.Figure()
+
+        # Add a text annotation to the figure
+        fig.add_annotation(
+            x=0.5,
+            y=0.5,
+            xref='paper',
+            yref='paper',
+            text=str(total_student),
+            font=dict(size=36, color='#C91B26'),
+            #bgcolor='blue',
+            showarrow=False
+        )
+
+        # Update the plot layout
+        fig.update_layout(
+            title="Number of Students",
+            title_font=dict(size=14),
+
+            width=150,
+            height=150,
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False)
+        )
+        # Create a plotly figure object
+        fig1 = go.Figure()
+
+        # Add a text annotation to the figure
+        fig1.add_annotation(
+            x=0.5,
+            y=0.5,
+            xref='paper',
+            yref='paper',
+            text=str(total_success),
+            font=dict(size=36, color='#C91B26'),
+            #bgcolor='blue',
+            showarrow=False
+        )
+
+        # Update the plot layout
+        fig1.update_layout(
+            title="Number of graduates",
+            title_font=dict(size=14),
+            width=150,
+            height=150,
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False)
+        )
+
         return  pn.Row(
-            pn.Column(pn.pane.Markdown("### Table")),
+            pn.Column(
+            pn.Row(fig),
+            pn.Row(fig1)
+            ),
             pn.Spacer(width=10),  # Add some spacing between the sidebar and the filter_table
             pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
@@ -335,10 +390,13 @@ class student_EDA (param.Parameterized):
 dashboard = student_EDA()
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
-    title='Filter Table Template',
+    title='Student dashboard',
     main=[dashboard.table,dashboard.plots1,dashboard.plots2,dashboard.plots3,dashboard.plots4],
     sidebar_width=305,
     header_background = "#A01346 ",
+    theme_toggle = False,
+    logo  = "ico.ico",
+
      sidebar=[pn.Param(dashboard.param,widgets={'math_widget':pn.widgets.FloatSlider,'reading_widget':pn.widgets.FloatSlider,'writing_widget':pn.widgets.FloatSlider, 'race_ethnicity_widget': pn.widgets.Select,'gender_widget': pn.widgets.Select, 'parental_level_of_education_widget': pn.widgets.Select, 'lunch_widget': pn.widgets.Select, 'test_preparation_course_widget': pn.widgets.Select})]
 )
 
