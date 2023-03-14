@@ -50,14 +50,11 @@ dashboard.servable()
 '''
 import pandas as pd
 import panel as pn
-import hvplot.pandas
 import plotly.graph_objs as go
 import holoviews as hv
-from holoviews import opts, dim
+from holoviews import opts
 import param
-from bokeh.plotting import figure, show
-from bokeh.layouts import gridplot
-from bokeh.palettes import Spectral5
+
 # Load the dataset
 df = pd.read_csv('StudentsPerformance.csv')
 df ["average score"] = (df ['math score'] + df['reading score'] + df['writing score']) /3 
@@ -201,7 +198,7 @@ class student_EDA (param.Parameterized):
             fig1.add_trace(go.Histogram(x=data, name=gender, opacity=0.75, 
                                         marker=dict(color='#160A47' if gender=='male' else ' #C91B26')))
             
-        fig1.update_layout(barmode='group', width=950, height=450, xaxis_title='Average Score', yaxis_title='Frequency', 
+        fig1.update_layout(barmode='group', width=890, height=450, xaxis_title='Average Score', yaxis_title='Frequency', 
                         title='Average Scores by Gender')
         grid3 = pn.Row(
         fig1, sizing_mode='stretch_both', width_policy='max'
@@ -251,7 +248,7 @@ class student_EDA (param.Parameterized):
                                 'x':0.5,
                                 'xanchor': 'center',
                                 'yanchor': 'top'},
-                        width = 950,
+                        width = 890,
                         height=450,
                         )
 
@@ -286,19 +283,14 @@ class student_EDA (param.Parameterized):
         df1 = df1[df1['average score']>=self.average_widget]
 
         scatter_plot = go.Figure(data=go.Scatter(x=df1['writing score'], y=df1['reading score'], mode='markers', marker=dict(color=df1['average score'], colorscale='sunsetdark')))
-        scatter_plot.update_layout(width=500, height=455, xaxis_title='Writing Score', yaxis_title='Reading Score', title='Scatter Plot of Writing Score vs Reading Score')
-        scatter_plot = hv.Scatter(df1, 'writing score', 'reading score', 'average score').opts(
-        opts.Scatter(width=500, height=455, xaxis='Writing Score', yaxis='Reading Score', 
-                    title='Scatter Plot of Writing Score vs Reading Score', color='average score', 
-                    cmap='sunsetdark'))
-
+        scatter_plot.update_layout(width=440, height=455, xaxis_title='Writing Score', yaxis_title='Reading Score', title='Scatter Plot of Writing Score vs Reading Score')
         scatter_plot1 = go.Figure()
 
         scatter_plot1.add_trace(go.Scatter(x=df['math score'], y=df['average score'], 
                                 mode='markers', marker=dict(color='#C91B26')))
 
         scatter_plot1.update_layout(title='Scatter Plot of Math Score vs Average Score',
-                        xaxis_title='Math Score', yaxis_title='Average Score',width=500, height=455)
+                        xaxis_title='Math Score', yaxis_title='Average Score',width=440, height=455)
 
 
         grid = pn.Row(
@@ -337,13 +329,13 @@ class student_EDA (param.Parameterized):
         heatmap = go.Figure(go.Heatmap(x=df['race/ethnicity'],
                             y= df['lunch'],
                             z = df['average score'].values.tolist(),colorscale='sunset'))
-        heatmap.update_layout(title='Heatmap of Race/Ethnicity and Lunch by Average score',xaxis_title='Race/Ethnicity', yaxis_title='Lunch',width=500, height=455)
+        heatmap.update_layout(title='Heatmap of Race/Ethnicity and Lunch by Average score',xaxis_title='Race/Ethnicity', yaxis_title='Lunch',width=440, height=455)
 
 
         heatmap1 = go.Figure(go.Heatmap(x=df['parental level of education'],
                             y= df['test preparation course'],
                             z = df['average score'].values.tolist(),colorscale='sunset'))
-        heatmap1.update_layout(title='Heatmap of Parental education and Test preparation by Average score',xaxis_title='Parental level of education', yaxis_title='Test preparation course',width=500, height=455)
+        heatmap1.update_layout(title='Heatmap of Parental education and Test preparation \n by Average score',xaxis_title='Parental level of education', yaxis_title='Test preparation course',width=440, height=455)
 
         grid = pn.Row(
         pn.Column(heatmap, sizing_mode='stretch_both', width_policy='max'),
