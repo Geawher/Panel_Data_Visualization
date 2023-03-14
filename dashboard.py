@@ -329,13 +329,33 @@ class student_EDA (param.Parameterized):
         heatmap = go.Figure(go.Heatmap(x=df['race/ethnicity'],
                             y= df['lunch'],
                             z = df['average score'].values.tolist(),colorscale='sunset'))
-        heatmap.update_layout(title='Heatmap of Race/Ethnicity and Lunch by Average score',xaxis_title='Race/Ethnicity', yaxis_title='Lunch',width=440, height=455)
-
+        heatmap.update_layout(
+            title={
+        'text': 'Heatmap of Race/Ethnicity and Lunch<br>by Average score',
+        'y': 0.95,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }      ,
+                xaxis_title='Race/Ethnicity',
+            yaxis_title='Lunch',
+            width=440,
+            height=455
+        )
 
         heatmap1 = go.Figure(go.Heatmap(x=df['parental level of education'],
                             y= df['test preparation course'],
                             z = df['average score'].values.tolist(),colorscale='sunset'))
-        heatmap1.update_layout(title='Heatmap of Parental education and Test preparation \n by Average score',xaxis_title='Parental level of education', yaxis_title='Test preparation course',width=440, height=455)
+        heatmap1.update_layout(
+                    title={
+        'text': 'Heatmap of Parental education and Test preparation <br> by Average score',
+        'y': 0.95,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'
+    }      ,       
+                               
+                               xaxis_title='Parental level of education', yaxis_title='Test preparation course',width=440, height=455)
 
         grid = pn.Row(
         pn.Column(heatmap, sizing_mode='stretch_both', width_policy='max'),
