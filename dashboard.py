@@ -52,11 +52,15 @@ import pandas as pd
 import panel as pn
 import hvplot.pandas
 import plotly.graph_objs as go
+import holoviews as hv
+from holoviews import opts, dim
 import param
-
+from bokeh.plotting import figure, show
+from bokeh.layouts import gridplot
+from bokeh.palettes import Spectral5
 # Load the dataset
 df = pd.read_csv('StudentsPerformance.csv')
-
+df ["average score"] = (df ['math score'] + df['reading score'] + df['writing score']) /3 
 
 class student_EDA (param.Parameterized): 
 
@@ -84,10 +88,12 @@ class student_EDA (param.Parameterized):
     math_widget = param.Number(0, bounds=(0, 100))
     reading_widget  = param.Number(0, bounds=(0, 100))
     writing_widget  = param.Number(0, bounds=(0, 100))
+    average_widget  = param.Number(0, bounds=(0, 100))
 
 
 
-    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget','average_widget',watch=True, on_init=False)
     def table (self):
          # Define the filters dictionary and filter_table widget
         filters = {
@@ -118,10 +124,13 @@ class student_EDA (param.Parameterized):
         df1 = df1[df1['math score']>=self.math_widget]
         df1 = df1[df1['reading score']>=self.reading_widget]
         df1 = df1[df1['writing score']>=self.writing_widget]
+        df1 = df1[df1['average score']>=self.average_widget]
+        
 
 
-        filter_table =pn.widgets.Tabulator(df1, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width', header_filters=filters)
+        filter_table =pn.widgets.Tabulator(df1, pagination='remote', layout='fit_columns', page_size=10, sizing_mode='stretch_width')
         return  pn.Row(
+            pn.Column(pn.pane.Markdown("### Table")),
             pn.Spacer(width=10),  # Add some spacing between the sidebar and the filter_table
             pn.Column(filter_table, height=500, sizing_mode='stretch_both', width_policy='max'),
             sizing_mode='stretch_both'
@@ -147,47 +156,59 @@ class student_EDA (param.Parameterized):
         df1 = df1[df1['math score']>=self.math_widget]
         df1 = df1[df1['reading score']>=self.reading_widget]
         df1 = df1[df1['writing score']>=self.writing_widget]
+        df1 = df1[df1['average score']>=self.average_widget]
+
         
         # Define the scatter plot and histogram
-        scatter_plot = df1.hvplot.scatter(x='math score', y='reading score', c='writing score', cmap='viridis')
-        histogram = df1.hvplot.hist('writing score', bins=20, width=500)
-        # Bar chart
-        bar_chart_data = df1.groupby('gender').mean()[['math score', 'reading score', 'writing score']]
-        bar_chart = go.Figure(
-            data=[
-                go.Bar(name='Math score', x=bar_chart_data.index, y=bar_chart_data['math score']),
-                go.Bar(name='Reading score', x=bar_chart_data.index, y=bar_chart_data['reading score']),
-                go.Bar(name='Writing score', x=bar_chart_data.index, y=bar_chart_data['writing score']),
-            ],
-            layout=go.Layout(title='Average Scores by Gender')
-        )
-        bar_chart_panel = pn.pane.Plotly(bar_chart, sizing_mode='stretch_both')
+        scatter_plot = df1.hvplot.scatter(x='writing score', y='reading score', c='average score', cmap='viridis',width=900)
 
-        # Pie chart
-        pie_chart_data = df1['race/ethnicity'].value_counts()
-        pie_chart = go.Figure(
-            data=[go.Pie(labels=pie_chart_data.index, values=pie_chart_data.values)],
-            layout=go.Layout(title='Distribution of Students by Race/Ethnicity')
-        )
-        pie_chart_panel = pn.pane.Plotly(pie_chart, sizing_mode='stretch_both')
+        histogram = df1.hvplot.hist('writing score', bins=20)
 
         # Combine the histogram and scatter_plot into a grid layout
         grid1 = pn.Row(
-            pn.Column(histogram, height=500, sizing_mode='stretch_both', width_policy='max'),
-            pn.Spacer(width=20),  # Add some spacing between the sidebar and the filter_table
-            pn.Column(scatter_plot, height=500, sizing_mode='stretch_both', width_policy='max'),
-            sizing_mode='stretch_both'
+            scatter_plot, height=500, sizing_mode='stretch_both', width_policy='max'
         )
 
-        # Combine the new plots into a grid layout with the existing ones
-        grid2 = pn.Row(
-            pn.Column(bar_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
-            pn.Spacer(width=20),
-            pn.Column(pie_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
-            sizing_mode='stretch_both'
-        )
         return grid1
     
+
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    def plots1(self):
+        df1=df
+        if (self.gender_widget!='ALL'):
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+            
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+        df1 = df1[df1['average score']>=self.average_widget] 
+        fig1 = go.Figure()
+
+        for gender in df1['gender'].unique():
+            data = df1[df1['gender']==gender]['average score']
+            fig1.add_trace(go.Histogram(x=data, name=gender, opacity=0.75, 
+                                        marker=dict(color='#160A47' if gender=='male' else ' #C91B26')))
+            
+        fig1.update_layout(barmode='group', width=950, height=450, xaxis_title='Average Score', yaxis_title='Frequency', 
+                        title='Average Scores by Gender')
+        grid3 = pn.Row(
+        fig1, sizing_mode='stretch_both', width_policy='max'
+    ) 
+
+        # fig1.show()
+        return grid3
     @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
     def plots2(self):
         df1=df
@@ -209,41 +230,138 @@ class student_EDA (param.Parameterized):
         df1 = df1[df1['math score']>=self.math_widget]
         df1 = df1[df1['reading score']>=self.reading_widget]
         df1 = df1[df1['writing score']>=self.writing_widget]
-        
-        # Bar chart
-        bar_chart_data = df1.groupby('gender').mean()[['math score', 'reading score', 'writing score']]
-        bar_chart = go.Figure(
-            data=[
-                go.Bar(name='Math score', x=bar_chart_data.index, y=bar_chart_data['math score']),
-                go.Bar(name='Reading score', x=bar_chart_data.index, y=bar_chart_data['reading score']),
-                go.Bar(name='Writing score', x=bar_chart_data.index, y=bar_chart_data['writing score']),
-            ],
-            layout=go.Layout(title='Average Scores by Gender')
-        )
-        bar_chart_panel = pn.pane.Plotly(bar_chart, sizing_mode='stretch_both')
+        df1 = df1[df1['average score']>=self.average_widget]
+        data = [go.Box(x =df1['reading score'],
+                    showlegend=False,
+                    name = 'Reading Score',
+                     marker=dict(color='#160A47')),
+                go.Box(x=df1['writing score'],
+                    showlegend=False,
+                    name = 'Writing Score', marker=dict(color='#9C0F5F')),
+                go.Box(x=df1['math score'],
+                    showlegend=False,
+                    name = 'Math Score', marker=dict(color='#C91B26')),
+                go.Box(x=df1['average score'],
+                showlegend=False,
+                name = 'Average Score', marker=dict(color='#F2671F'))]
+                
 
-        # Pie chart
-        pie_chart_data = df1['race/ethnicity'].value_counts()
-        pie_chart = go.Figure(
-            data=[go.Pie(labels=pie_chart_data.index, values=pie_chart_data.values)],
-            layout=go.Layout(title='Distribution of Students by Race/Ethnicity')
-        )
-        pie_chart_panel = pn.pane.Plotly(pie_chart, sizing_mode='stretch_both')
+        layout = go.Layout(title={'text': "Scores",
+                                'y':0.9,
+                                'x':0.5,
+                                'xanchor': 'center',
+                                'yanchor': 'top'},
+                        width = 950,
+                        height=450,
+                        )
 
-        # Combine the new plots into a grid layout with the existing ones
-        grid2 = pn.Row(
-            pn.Column(bar_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
-            pn.Spacer(width=20),
-            pn.Column(pie_chart_panel, height=500, sizing_mode='stretch_both', width_policy='max'),
-            sizing_mode='stretch_both'
-        )
-        return grid2
+        fig = go.Figure(data = data, layout = layout)
+        grid3 = pn.Row(
+        fig, sizing_mode='stretch_both', width_policy='max'
+            ) 
+
+        # fig1.show()
+        return grid3
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    def plots3(self):
+        df1=df
+        if (self.gender_widget!='ALL'):
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+            
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+        df1 = df1[df1['average score']>=self.average_widget]
+
+        scatter_plot = go.Figure(data=go.Scatter(x=df1['writing score'], y=df1['reading score'], mode='markers', marker=dict(color=df1['average score'], colorscale='sunsetdark')))
+        scatter_plot.update_layout(width=500, height=455, xaxis_title='Writing Score', yaxis_title='Reading Score', title='Scatter Plot of Writing Score vs Reading Score')
+        scatter_plot = hv.Scatter(df1, 'writing score', 'reading score', 'average score').opts(
+        opts.Scatter(width=500, height=455, xaxis='Writing Score', yaxis='Reading Score', 
+                    title='Scatter Plot of Writing Score vs Reading Score', color='average score', 
+                    cmap='sunsetdark'))
+
+        scatter_plot1 = go.Figure()
+
+        scatter_plot1.add_trace(go.Scatter(x=df['math score'], y=df['average score'], 
+                                mode='markers', marker=dict(color='#C91B26')))
+
+        scatter_plot1.update_layout(title='Scatter Plot of Math Score vs Average Score',
+                        xaxis_title='Math Score', yaxis_title='Average Score',width=500, height=455)
+
+
+        grid = pn.Row(
+        pn.Column(scatter_plot, sizing_mode='stretch_both', width_policy='max'),
+        pn.Spacer(width=10),
+        pn.Column(scatter_plot1, sizing_mode='stretch_both', width_policy='max'),
+
+    ) 
+
+        # fig1.show()
+        return grid
+    
+    @pn.depends('gender_widget','race_ethnicity_widget','parental_level_of_education_widget','lunch_widget','test_preparation_course_widget','math_widget','reading_widget','writing_widget',watch=True, on_init=False)
+    def plots4(self):
+        df1=df
+        if (self.gender_widget!='ALL'):
+            df1 = df1[df1['gender']==self.gender_widget]
+
+        if (self.race_ethnicity_widget!='ALL'):
+            df1 = df1[df1['race/ethnicity']==self.race_ethnicity_widget]
+
+        if (self.parental_level_of_education_widget!='ALL'):
+            df1 = df1[df1["parental level of education"]==self.parental_level_of_education_widget]
+
+        if (self.lunch_widget!='ALL'):
+            df1 = df1[df1['lunch']==self.lunch_widget]
+
+        if (self.test_preparation_course_widget!='ALL'):
+            df1 = df1[df1['test preparation course']==self.test_preparation_course_widget]
+            
+        df1 = df1[df1['math score']>=self.math_widget]
+        df1 = df1[df1['reading score']>=self.reading_widget]
+        df1 = df1[df1['writing score']>=self.writing_widget]
+        df1 = df1[df1['average score']>=self.average_widget]
+
+        heatmap = go.Figure(go.Heatmap(x=df['race/ethnicity'],
+                            y= df['lunch'],
+                            z = df['average score'].values.tolist(),colorscale='sunset'))
+        heatmap.update_layout(title='Heatmap of Race/Ethnicity and Lunch by Average score',xaxis_title='Race/Ethnicity', yaxis_title='Lunch',width=500, height=455)
+
+
+        heatmap1 = go.Figure(go.Heatmap(x=df['parental level of education'],
+                            y= df['test preparation course'],
+                            z = df['average score'].values.tolist(),colorscale='sunset'))
+        heatmap1.update_layout(title='Heatmap of Parental education and Test preparation by Average score',xaxis_title='Parental level of education', yaxis_title='Test preparation course',width=500, height=455)
+
+        grid = pn.Row(
+        pn.Column(heatmap, sizing_mode='stretch_both', width_policy='max'),
+        pn.Spacer(width=10),
+        pn.Column(heatmap1, sizing_mode='stretch_both', width_policy='max'),
+
+    ) 
+
+        # fig1.show()
+        return grid
     
 dashboard = student_EDA()
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
     title='Filter Table Template',
-    main=[dashboard.table,dashboard.plots,dashboard.plots2],
+    main=[dashboard.table,dashboard.plots1,dashboard.plots2,dashboard.plots3,dashboard.plots4],
+    sidebar_width=305,
+    header_background = "#A01346 ",
      sidebar=[pn.Param(dashboard.param,widgets={'math_widget':pn.widgets.FloatSlider,'reading_widget':pn.widgets.FloatSlider,'writing_widget':pn.widgets.FloatSlider, 'race_ethnicity_widget': pn.widgets.Select,'gender_widget': pn.widgets.Select, 'parental_level_of_education_widget': pn.widgets.Select, 'lunch_widget': pn.widgets.Select, 'test_preparation_course_widget': pn.widgets.Select})]
 )
 
