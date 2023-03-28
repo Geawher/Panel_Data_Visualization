@@ -212,6 +212,70 @@ template = pn.template.FastListTemplate(
     main=[dashboard.k_means,dashboard.k_means_3d,dashboard.PCA,dashboard.PCA_3d],
     sidebar_width=305,
     header_background = "#A01346 ",
+    header=[pn.pane.HTML("""
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        header {
+            background-color: #A01346;
+            color: white;
+            width: 60rem;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: end;
+            justify-content: end;
+            
+        }
+        
+        .logo-container a {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            margin-right: 7px;
+            
+        }
+        
+        .logo {
+            font-size: 1.4em;
+            margin-bottom: 5px;
+        }
+        
+        .logo-title {
+            font-size: 1em;
+            text-align: center;
+            margin-left:5px;
+            margin-bottom:10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    
+        <div class="logo-container">
+             <a href="C:/Users/HP/Desktop/Projet_data_viz/data_viz/Main.html">
+                <i class="fas fa-home logo"></i>
+                <div class="logo-title">Home</div>
+            </a>
+            <a href="http://localhost:5006/dashboard">
+                <i class="fa-light fa-computer-classic logo"></i>
+
+                <div class="logo-title">EDA</div>
+            </a>
+           
+    
+        </div>
+    
+    </header>
+    <!-- rest of the page content goes here -->
+</body>
+</html>""")],
     theme_toggle = False,
     logo  = "ML.ico",
 
