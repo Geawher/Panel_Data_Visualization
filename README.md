@@ -22,4 +22,7 @@ To view the website, run the following command
 ```
 panel serve dashboard.py ML.py --index=Main.html
 ```  
+# Contact
+
+If you have any questions or comments about this project, please contact the project owners. 
 
