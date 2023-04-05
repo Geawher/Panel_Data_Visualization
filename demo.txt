@@ -1,0 +1,3 @@
+We were unable to deploy the app. 
+Here is a link of a small video of the running code : 
+https://youtu.be/CWnRpHcR-BA
