@@ -208,7 +208,7 @@ class ML_dashboard (param.Parameterized):
 dashboard = ML_dashboard()
 # Define a custom panel template with the grid layout
 template = pn.template.FastListTemplate(
-    title='Student dashboard',
+    title='Student ML dashboard',
     main=[dashboard.k_means,dashboard.k_means_3d,dashboard.PCA,dashboard.PCA_3d],
     sidebar_width=305,
     header_background = "#A01346 ",
@@ -217,12 +217,12 @@ template = pn.template.FastListTemplate(
 <html>
 <head>
     <title></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+     <style>
         header {
             background-color: #A01346;
             color: white;
-            width: 60rem;
+            width: 55rem;
         }
         
         .logo-container {
@@ -238,7 +238,7 @@ template = pn.template.FastListTemplate(
             align-items: center;
             text-decoration: none;
             color: white;
-            margin-right: 7px;
+            margin-right: 12px;
             
         }
         
@@ -256,16 +256,16 @@ template = pn.template.FastListTemplate(
     </style>
 </head>
 <body>
+<body>
     <header>
     
         <div class="logo-container">
-             <a href="C:/Users/HP/Desktop/Projet_data_viz/data_viz/Main.html">
+             <a href="D:/Dauphine/M2/Projets s2/Projet_data_viz/data_viz/Main.html">
                 <i class="fas fa-home logo"></i>
                 <div class="logo-title">Home</div>
             </a>
             <a href="http://localhost:5006/dashboard">
-                <i class="fa-light fa-computer-classic logo"></i>
-
+            <i class="far fa-chart-bar logo"></i>
                 <div class="logo-title">EDA</div>
             </a>
            
